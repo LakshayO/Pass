@@ -1,24 +1,27 @@
 from tkinter import *
 from tkinter import messagebox
 from random import choice, randint, shuffle
-# import pyperclip
+import pyperclip
 import json
+from cryptography.fernet import Fernet
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 
-#Password Generator Project
+# Password Generator Function
 def generate_password():
-    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
-               'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-               'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+    small_letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+                     'U', 'V', 'W', 'X', 'Y', 'Z']
+    capital_letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
+                       't', 'u', 'v', 'w', 'x', 'y', 'z',]
     numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
     symbols = ['!', '#', '$', '%', '&', '(', ')', '*', '+']
 
-    password_letters = [choice(letters) for _ in range(randint(8, 10))]
+    password_small_letters = [choice(small_letters) for _ in range(randint(8, 10))]
+    password_capital_letters = [choice(capital_letters) for _ in range(randint(4, 8))]
     password_symbols = [choice(symbols) for _ in range(randint(2, 4))]
     password_numbers = [choice(numbers) for _ in range(randint(2, 4))]
 
-    password_list = password_letters + password_symbols + password_numbers
+    password_list = password_small_letters + password_capital_letters + password_symbols + password_numbers
     shuffle(password_list)
 
     password = "".join(password_list)
@@ -32,11 +35,14 @@ def save():
 
     website = website_entry.get()
     email = email_entry.get()
+    my_key = Fernet.generate_key().decode()
     password = password_entry.get()
+    password_key = my_encrypt(my_key, data=password).decode()
     new_data = {
         website: {
             "email": email,
-            "password": password,
+            "password_key": password_key,
+            "key": my_key,
         }
     }
 
@@ -69,7 +75,8 @@ def delete():
     new_data = {
         website: {
             "email": email,
-            "password": "N/A",
+            "password_key": "",
+            "key": "",
         }
     }
     if len(email) == 0:
@@ -88,6 +95,21 @@ def delete():
             messagebox.showinfo(title="Oops", message="No password has been saved for the given details")
         else:
             messagebox.showinfo(title="Password", message=f"For {website} and {email} your password has been deleted")
+            website_entry.delete(0, END)
+            password_entry.delete(0, END)
+
+# ---------------------------- Encrypter And Decrypter ------------------------------- #
+
+# Encrypter Function
+
+def my_encrypt(key, data):
+    f = Fernet(key)
+    return f.encrypt(data.encode())
+
+# Decrypter Function
+def my_decrypt(key, data):
+    f = Fernet(key)
+    return f.decrypt(data).decode()
 
 
 # ---------------------------- FIND PASSWORD ------------------------------- #
@@ -97,18 +119,31 @@ def find_password():
     if len(email) == 0:
         messagebox.showinfo(title="Oops", message="Please fill in your email.")
     elif len(website) == 0:
-        messagebox.showinfo(title="Oopsie", message="Next time try filling website you were searching for.")
+        messagebox.showinfo(title="Oopsie", message="Try filling in website you were searching for.")
     else:
         try:
+            print(1)
             with open("data.json", "r") as data_file:
                 data = json.load(data_file)
+            if website in data:
+                pass
+            else:
+                messagebox.showinfo(title="Password Unavailable", message="There is no password saved for the given "
+                                                                          "details.")
+                return
+            print(2)
         except:
             messagebox.showinfo(title="Oops", message="First you should "
                                                       "try to save some passwords before searching for one.")
         else:
+            key = data[website]["key"].encode()
+            encrypted_password = data[website]["password_key"]
+            password = my_decrypt(key=key, data=encrypted_password)
             messagebox.showinfo(title="Password", message=f"For {website} and {email} "
-                                                          f"your password is:\n{data[website]['password']}")
-            # pyperclip.copy(data[website]['password'])
+                                                          f"your password is:\n{password}")
+            pyperclip.copy(password)
+            website_entry.delete(0, END)
+            password_entry.delete(0, END)
             # for i in data[website]:
             #     if data[website][] == email:
             #         messagebox.showinfo(title="YOUR PASSWORD", message=f"Your password for \n"
