@@ -5,6 +5,12 @@ import pyperclip
 import json
 from cryptography.fernet import Fernet
 
+background_color = '#FFE9CE'
+button_color = "#FFDCCB"
+box_color = '#ffffff'
+label_colors = background_color
+delete_button_color = "#FFE083"
+
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 
 # Password Generator Function
@@ -155,39 +161,42 @@ def find_password():
 
 window = Tk()
 window.title("Password Manager")
-window.config(padx=50, pady=50)
+window.config(padx=50, pady=50, background=background_color)
 
-canvas = Canvas(height=200, width=200)
+canvas = Canvas(height=200, width=200, background=background_color, borderwidth=0, highlightthickness=0)
 logo_img = PhotoImage(file="logo.png")
 canvas.create_image(100, 100, image=logo_img)
 canvas.grid(row=0, column=1)
 
 # Labels
-website_label = Label(text="Website:")
+website_label = Label(text="Website:", width=20, background=label_colors)
 website_label.grid(row=1, column=0)
-email_label = Label(text="Email/Username:")
+email_label = Label(text="Email/Username:", width=20, background=label_colors)
 email_label.grid(row=2, column=0)
-password_label = Label(text="Password:")
+password_label = Label(text="Password:", width=20, background=label_colors)
 password_label.grid(row=3, column=0)
 
 # Entries
-website_entry = Entry(width=38)
+website_entry = Entry(width=38, background=box_color)
 website_entry.grid(row=1, column=1)
 website_entry.focus()
-email_entry = Entry(width=56)
+email_entry = Entry(width=56, background=box_color)
 email_entry.grid(row=2, column=1, columnspan=2)
 email_entry.insert(0, "@gmail.com")
-password_entry = Entry(width=38)
+password_entry = Entry(width=38, background=box_color)
 password_entry.grid(row=3, column=1)
 
 # Buttons
-search_button = Button(text="Search", width=14, command=find_password)
+search_button = Button(text="Search", width=14, command=find_password, activebackground=button_color,
+                       background=button_color)
 search_button.grid(row=1, column=2)
-generate_password_button = Button(text="Generate Password", width=14, command=generate_password)
+generate_password_button = Button(text="Generate Password", width=14, command=generate_password,
+                                  background=button_color, activebackground=button_color)
 generate_password_button.grid(row=3, column=2)
-add_button = Button(text="Add", width=48, command=save)
+add_button = Button(text="Add", width=48, command=save, background=button_color, activebackground=button_color)
 add_button.grid(row=4, column=1, columnspan=2)
-delete_button = Button(text='Delete', width=10,command=delete)
+delete_button = Button(text='Delete', width=20, command=delete, background=delete_button_color, borderwidth=0,
+                       activebackground=delete_button_color)
 delete_button.grid(row=4, column=0)
 
 window.mainloop()
